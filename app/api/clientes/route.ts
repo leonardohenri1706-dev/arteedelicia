@@ -1,4 +1,3 @@
-import { sql } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -8,14 +7,13 @@ export async function POST(request: Request) {
     if (!telefone || !nome) {
       return NextResponse.json({ error: "Telefone e nome obrigatorios" }, { status: 400 });
     }
+    
+    // Dynamic import to avoid build-time errors
+    const { sql } = await import("@/lib/db");
+    
     const result = await sql`
       INSERT INTO clientes (telefone, nome, endereco, complemento)
-      VALUES (
-        ${telefone},
-        ${nome},
-        ${endereco || null},
-        ${complemento || null}
-      )
+      VALUES (${telefone}, ${nome}, ${endereco || null}, ${complemento || null})
       ON CONFLICT (telefone) DO UPDATE SET
         nome = EXCLUDED.nome,
         endereco = EXCLUDED.endereco,

@@ -1,12 +1,9 @@
-import { sql } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
+    const { sql } = await import("@/lib/db");
     const pedidos = await sql`SELECT * FROM pedidos WHERE id = ${id} LIMIT 1`;
     if (pedidos.length === 0) {
       return NextResponse.json({ error: "Pedido nao encontrado" }, { status: 404 });
@@ -18,14 +15,12 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
     const body = await request.json();
     const { status } = body;
+    const { sql } = await import("@/lib/db");
     await sql`UPDATE pedidos SET status = ${status} WHERE id = ${id}`;
     return NextResponse.json({ success: true });
   } catch (error) {

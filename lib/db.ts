@@ -1,12 +1,25 @@
-import { neon } from "@neondatabase/serverless";
+import { neon, NeonQueryFunction } from "@neondatabase/serverless";
 
-// Get connection string from env
-const connectionString = process.env.DATABASE_URL || "";
+let _sql: NeonQueryFunction<false, false> | null = null;
 
-// Create a SQL executor
-export const sql = neon(connectionString);
+function getSql() {
+  if (!_sql) {
+    const conn = process.env.DATABASE_URL || "";
+    if (!conn) {
+      // During build, DATABASE_URL is not set - return a mock
+      throw new Error("DATABASE_URL not configured");
+    }
+    _sql = neon(conn);
+  }
+  return _sql;
+}
 
-// Database types
+// Tagged template SQL function - only connects when called
+export function sql(strings: TemplateStringsArray | string, ...values: any[]) {
+  const fn = getSql();
+  return fn(strings as any, ...values);
+}
+
 export interface Cliente {
   id: string;
   telefone: string;
